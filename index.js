@@ -25,11 +25,17 @@ io.on("connection", (socket) => {
     socket.join(data);
     socket.emit("user_info", socket.id);
   });
-  socket.on("create_room", (data) => {
-    console.log("🚀 ~ file: index.js:30 ~ socket.on ~ data:", data);
 
-    socket.in(data.roomId).emit("room_owner", data);
+  socket.on("create_room", (data) => {
+    socket.join(data.roomId);
+
+    io.in(data.roomId).emit("room_owner", {
+      name: data.name,
+      roomId: data.roomId,
+      _id: socket.id,
+    });
   });
+
   socket.on("send_message", (data) => {
     socket.in(data.roomId).emit("message_sent", data.message);
   });
