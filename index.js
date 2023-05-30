@@ -23,11 +23,15 @@ io.on("connection", (socket) => {
 
   socket.on("join_room", (data) => {
     socket.join(data);
+    socket.emit("user_info", socket.id);
   });
+  socket.on("create_room", (data) => {
+    console.log("🚀 ~ file: index.js:30 ~ socket.on ~ data:", data);
 
+    socket.in(data.roomId).emit("room_owner", data);
+  });
   socket.on("send_message", (data) => {
-    console.log("Received send_message event:", data);
-    io.to(data.roomId).emit("message_sent", data.message);
+    socket.in(data.roomId).emit("message_sent", data.message);
   });
 });
 
