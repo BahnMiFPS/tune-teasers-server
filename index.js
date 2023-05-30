@@ -1,13 +1,12 @@
 const express = require("express");
 
-const app = express();
-
 const http = require("http");
 
 const { Server } = require("socket.io");
 
 const cors = require("cors");
 
+const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
@@ -27,8 +26,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send_message", (data) => {
-    console.log(data);
-    socket.to(data.roomId).emit("receive_message", data);
+    console.log("Received send_message event:", data);
+    io.to(data.roomId).emit("message_sent", data.message);
   });
 });
 
