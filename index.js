@@ -22,9 +22,13 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   socket.on("join_room", (data) => {
-    console.log("joining");
-    socket.join(data);
-    socket.emit("user_info", socket.id);
+    console.log("joining", data);
+    socket.join(data.roomId);
+    socket.emit("user_info", {
+      name: data.name,
+      roomId: data.roomId,
+      _id: socket.id,
+    });
   });
 
   socket.on("create_room", (data) => {
