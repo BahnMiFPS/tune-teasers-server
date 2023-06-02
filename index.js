@@ -11,10 +11,10 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-
+const port = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: {
-    origin: "https://tune-teasers.herokuapp.com",
+    origin: `https://localhost:${port}`,
     methods: ["GET", "POST"],
   },
 });
@@ -198,6 +198,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("SERVER IS RUNNING");
+server.listen(port, () => {
+  console.log(`SERVER IS RUNNING on port: ${port}`);
 });
