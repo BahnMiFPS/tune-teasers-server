@@ -7,6 +7,7 @@ const {
   generateRoomQuestions,
   generateQuizFile,
 } = require("./utils/getQuestion");
+const { env } = require("process");
 const app = express();
 app.use(cors());
 
@@ -14,7 +15,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: {
-    origin: `https://localhost:${port}`,
+    origin: `http://localhost:3000`,
     methods: ["GET", "POST"],
   },
 });
