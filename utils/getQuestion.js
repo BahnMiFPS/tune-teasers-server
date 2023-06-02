@@ -75,7 +75,7 @@ function getQuestion(questionIndex, quizQuestions) {
 }
 
 function generateRoomQuestions() {
-  const MAX_QUESTION_PER_ROOM = 10;
+  const MAX_QUESTION_PER_ROOM = 15;
   const quizData = fs.readFileSync("./quiz.json", "utf8");
   const quizQuestions = JSON.parse(quizData);
 

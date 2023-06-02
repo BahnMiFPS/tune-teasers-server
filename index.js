@@ -180,7 +180,7 @@ io.on("connection", (socket) => {
 
     if (room.currentAnswers === room.players.length) {
       room.currentQuestionIndex += 1;
-      if (currentQuestionIndex === 4) {
+      if (currentQuestionIndex === 14) {
         setTimeout(() => {
           io.in(roomId).emit("game_ended", roomId);
         }, 2000);
