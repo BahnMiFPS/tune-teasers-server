@@ -15,7 +15,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 const clientAppOrigin =
   process.env.NODE_ENV === "production"
-    ? "https://grand-smakager-dc7f64.netlify.app"
+    ? "https://tune-teaser.netlify.app"
     : "http://localhost:3000";
 console.log(clientAppOrigin);
 const io = new Server(server, {
