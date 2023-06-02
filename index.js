@@ -15,9 +15,9 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 const clientAppOrigin =
   process.env.NODE_ENV === "production"
-    ? "https://tune-teasers.herokuapp.com"
+    ? "https://grand-smakager-dc7f64.netlify.app"
     : "http://localhost:3000";
-
+console.log(clientAppOrigin);
 const io = new Server(server, {
   cors: {
     origin: clientAppOrigin,
