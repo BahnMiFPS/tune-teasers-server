@@ -24,7 +24,9 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
+app.get("/", (req, res) => {
+  res.send("Hello, this is Tune Teasers!");
+});
 const rooms = new Map(); // Map to store rooms and players
 
 io.on("connection", (socket) => {
