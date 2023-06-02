@@ -15,7 +15,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: {
-    origin: `http://localhost:3000`,
+    origin: `https://tune-teaser-frontend.herokuapp.com/`,
     methods: ["GET", "POST"],
   },
 });
