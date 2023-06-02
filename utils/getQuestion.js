@@ -79,14 +79,22 @@ function generateRoomQuestions() {
   const quizData = fs.readFileSync("./quiz.json", "utf8");
   const quizQuestions = JSON.parse(quizData);
 
-  // Shuffle the quizQuestions array randomly
-  const shuffledQuestions = quizQuestions.sort(() => Math.random() - 0.5);
+  // // Shuffle the quizQuestions array randomly
+  // const shuffledQuestions = quizQuestions.sort(() => Math.random() - 0.5);
+
+  // // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
+  // const roomQuestionsCollection = shuffledQuestions.slice(
+  //   0,
+  //   MAX_QUESTION_PER_ROOM
+  // );
+  // Perform the Fisher-Yates shuffle
+  for (let i = quizQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+  }
 
   // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
-  const roomQuestionsCollection = shuffledQuestions.slice(
-    0,
-    MAX_QUESTION_PER_ROOM
-  );
+  const roomQuestionsCollection = quizQuestions.slice(0, MAX_QUESTION_PER_ROOM);
 
   return roomQuestionsCollection;
 }
