@@ -2,8 +2,11 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const getQuestion = require("./utils/getQuestion");
-
+const {
+  getQuestion,
+  generateRoomQuestions,
+  generateQuizFile,
+} = require("./utils/getQuestion");
 const app = express();
 app.use(cors());
 
@@ -44,6 +47,7 @@ io.on("connection", (socket) => {
       currentQuestionIndex: 0,
       currentAnswers: 0,
       messages: [],
+      questions: generateRoomQuestions(),
     };
     rooms.set(roomId, room);
 
@@ -102,10 +106,14 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("game_started", roomId);
   });
 
-  socket.on("room_game_init", (roomId) => {
+  socket.on("room_game_init", (roomId, playlist_id) => {
     const room = rooms.get(roomId);
     const players = room.players;
-    const currentQuestion = getQuestion(room.currentQuestionIndex);
+    const roomQuestions = room.questions;
+    const currentQuestion = getQuestion(
+      room.currentQuestionIndex,
+      roomQuestions
+    );
     io.in(roomId).emit("new_question", currentQuestion);
     io.in(roomId).emit("leaderboard_updated", players);
   });
@@ -139,11 +147,12 @@ io.on("connection", (socket) => {
     console.log("disconnected event");
   });
 
-  socket.on("chosen_answer", ({ answerIndex, roomId }) => {
+  socket.on("chosen_answer", async ({ answerIndex, roomId }) => {
     const room = rooms.get(roomId);
 
     const currentQuestionIndex = room.currentQuestionIndex;
-    const question = getQuestion(currentQuestionIndex);
+    const roomQuestions = room.questions;
+    const question = getQuestion(room.currentQuestionIndex, roomQuestions);
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(
       (player) => player.id === socket.id
@@ -161,18 +170,29 @@ io.on("connection", (socket) => {
       socket.emit("wrong_answer");
     }
 
-    if (room.currentAnswers === 1) {
+    if (room.currentAnswers === room.players.length) {
       room.currentQuestionIndex += 1;
       if (currentQuestionIndex === 4) {
         setTimeout(() => {
           io.in(roomId).emit("game_ended", roomId);
         }, 2000);
       } else {
-        const currentQuestion = getQuestion(room.currentQuestionIndex);
-        setTimeout(() => {
-          io.in(roomId).emit("new_question", currentQuestion);
-          room.currentAnswers = 0;
-        }, 3000);
+        var time = 3;
+        var roundCountdown = setInterval(() => {
+          if (time == 0) {
+            io.sockets.in(roomId).emit("countdown", 0);
+            const roomQuestions = room.questions;
+            const currentQuestion = getQuestion(
+              room.currentQuestionIndex,
+              roomQuestions
+            );
+            io.in(roomId).emit("new_question", currentQuestion);
+            room.currentAnswers = 0;
+            clearInterval(roundCountdown);
+          }
+          io.sockets.in(roomId).emit("countdown", time);
+          time -= 1;
+        }, 1000);
       }
     }
   });
