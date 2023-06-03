@@ -2,15 +2,11 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const {
-  getQuestion,
-  generateRoomQuestions,
-  generateQuizFile,
-} = require("./utils/getQuestion");
-const { env } = require("process");
+const { getQuestion, generateRoomQuestions } = require("./utils/getQuestion");
 const { getPlayListByCountry } = require("./utils/fetchPlaylist");
 const { getAccessToken } = require("./utils/spotify");
 const app = express();
+const { faker } = require("@faker-js/faker");
 app.use(cors());
 
 const server = http.createServer(app);
@@ -19,13 +15,27 @@ const clientAppOrigin =
   process.env.NODE_ENV === "production"
     ? "https://tune-teaser.netlify.app"
     : "http://localhost:3000";
-console.log("🚀 ~ file: index.js:18 ~ clientAppOrigin:", clientAppOrigin);
 const io = new Server(server, {
   cors: {
     origin: clientAppOrigin,
     methods: ["GET", "POST"],
   },
 });
+
+// Access token variable to store the token
+let accessToken = null;
+
+// Get access token during server startup or when needed for the first time
+(async () => {
+  try {
+    accessToken = await getAccessToken();
+    console.log("Access token obtained successfully!");
+  } catch (error) {
+    console.error("Failed to obtain access token:", error);
+    process.exit(1);
+  }
+})();
+
 app.get("/", (req, res) => {
   res.send("Hello, this is Tune Teasers!");
 });
@@ -34,8 +44,7 @@ app.get("/api/playlists", async (req, res) => {
   console.log("fetching playlists");
   const { country, locale } = req.query;
   try {
-    const token = await getAccessToken();
-    const playlists = await getPlayListByCountry(country, locale, token);
+    const playlists = await getPlayListByCountry(country, locale, accessToken);
     const playlistData = playlists.playlists.items.map((playlist) => ({
       id: playlist.id,
       name: playlist.name,
@@ -69,7 +78,8 @@ io.on("connection", (socket) => {
     const { name, roomId } = data;
     console.log(roomId);
     socket.join(parseInt(roomId));
-    const player = { id: socket.id, name, score: 0 };
+    const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
+    const player = { id: socket.id, name, score: 0, image: randomImage };
     // Create a room object with players array, gameStarted flag, and currentQuestionIndex
     const room = {
       players: [player],
@@ -87,7 +97,9 @@ io.on("connection", (socket) => {
   socket.on("join_room", (data) => {
     const { name, roomId } = data;
     // Create a new player object with a unique ID and score
-    const player = { id: socket.id, name, score: 0 };
+    const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
+
+    const player = { id: socket.id, name, score: 0, image: randomImage };
 
     // Get the room object from the rooms map
     const room = rooms.get(parseInt(roomId));
@@ -115,25 +127,29 @@ io.on("connection", (socket) => {
     const senderIndex = room.players.findIndex(
       (player) => player.id === socket.id
     );
-    const senderName = room.players[senderIndex].name;
+    const sender = room.players[senderIndex];
 
     const newMessage = {
       sender: socket.id,
       message,
-      displayName: senderName,
-      photoURL: "", // Add the sender's photoURL if available
+      displayName: sender.name,
+      photoURL: sender.image,
     };
     room.messages.push(newMessage);
     io.in(roomId).emit("message_sent", newMessage);
   });
 
-  socket.on("start_game", async ({ roomId, playlistId }) => {
+  socket.on("picked_music_starting_game", async ({ roomId, playlistId }) => {
+    io.in(roomId).emit("countdown_start", roomId);
     const room = rooms.get(roomId);
     if (room) {
       room.gameStarted = true;
       room.currentQuestionIndex = 0;
       room.questions = await generateRoomQuestions(playlistId);
     }
+  });
+
+  socket.on("start_game", ({ roomId }) => {
     io.in(roomId).emit("game_started", roomId);
   });
 

@@ -4,6 +4,7 @@ const { getPlaylistTracks } = require("./fetchPlaylist");
 async function generateQuizQuestions(playlistId) {
   const quizQuestions = [];
   const playlistData = await getPlaylistTracks(playlistId);
+
   const tracks = playlistData.tracks.items;
 
   tracks.forEach((track, index) => {
