@@ -9,6 +9,7 @@ const {
 } = require("./utils/getQuestion");
 const { env } = require("process");
 const { getPlayListByCountry } = require("./utils/fetchPlaylist");
+const { getAccessToken } = require("./utils/spotify");
 const app = express();
 app.use(cors());
 
@@ -32,9 +33,9 @@ app.get("/", (req, res) => {
 app.get("/api/playlists", async (req, res) => {
   console.log("fetching playlists");
   const { country, locale } = req.query;
-
   try {
-    const playlists = await getPlayListByCountry(country, locale);
+    const token = await getAccessToken();
+    const playlists = await getPlayListByCountry(country, locale, token);
     const playlistData = playlists.playlists.items.map((playlist) => ({
       id: playlist.id,
       name: playlist.name,

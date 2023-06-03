@@ -22,9 +22,8 @@ async function getPlaylistTracks(playlist_id) {
   }
 }
 
-async function getPlayListByCountry(country, locale) {
+async function getPlayListByCountry(country, locale, token) {
   const url = `https://api.spotify.com/v1/browse/featured-playlists/?country=${country}&locale=${locale}&limit=50`;
-  const token = await getAccessToken();
 
   const headers = { Authorization: `Bearer ${token}` };
 
