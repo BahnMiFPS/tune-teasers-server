@@ -8,6 +8,7 @@ const {
   generateQuizFile,
 } = require("./utils/getQuestion");
 const { env } = require("process");
+const { getPlayListByCountry } = require("./utils/fetchPlaylist");
 const app = express();
 app.use(cors());
 
@@ -27,6 +28,25 @@ const io = new Server(server, {
 app.get("/", (req, res) => {
   res.send("Hello, this is Tune Teasers!");
 });
+
+app.get("/api/playlists", async (req, res) => {
+  const { country, locale } = req.query;
+
+  try {
+    const playlists = await getPlayListByCountry(country, locale);
+    const playlistData = playlists.playlists.items.map((playlist) => ({
+      id: playlist.id,
+      name: playlist.name,
+      description: playlist.description,
+      image: playlist.images[0].url,
+    }));
+    res.json({ data: playlistData });
+  } catch (error) {
+    console.error("Error fetching playlists:", error);
+    res.status(500).json({ error: "Failed to fetch playlists" });
+  }
+});
+
 const rooms = new Map(); // Map to store rooms and players
 
 io.on("connection", (socket) => {

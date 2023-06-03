@@ -1,10 +1,11 @@
-const getAccessToken = require("./spotify");
+const { getAccessToken, isAccessTokenExpired } = require("./spotify");
 const axios = require("axios");
 require("dotenv").config();
+
 async function getPlaylistTracks(playlist_id) {
-  // Spotify API URL
   const url = `https://api.spotify.com/v1/playlists/${playlist_id}`;
   const token = await getAccessToken();
+
   // You will need to replace 'Bearer ' with your own token.
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -20,14 +21,24 @@ async function getPlaylistTracks(playlist_id) {
     return null;
   }
 }
-// getPlaylistTracks("37i9dQZEVXbLdGSmz6xilI")
-//   .then((res) => {
-//     console.log(res);
-//   })
-//   .catch((error) => {
-//     if (error) {
-//       console.log("Error:", error);
-//     }
-//   });
 
-module.exports = getPlaylistTracks;
+async function getPlayListByCountry(country, locale) {
+  const url = `https://api.spotify.com/v1/browse/featured-playlists/?country=${country}&locale=${locale}`;
+  const token = await getAccessToken();
+
+  // You will need to replace 'Bearer ' with your own token.
+  const headers = { Authorization: `Bearer ${token}` };
+
+  try {
+    const response = await axios.get(url, { headers });
+    return response.data;
+  } catch (error) {
+    console.log("Playlist Fetching Error:", error);
+    return null;
+  }
+}
+
+module.exports = {
+  getPlaylistTracks,
+  getPlayListByCountry,
+};

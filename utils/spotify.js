@@ -1,7 +1,15 @@
 const axios = require("axios");
 require("dotenv").config();
 
+let accessToken = null; // Variable to store the access token
+let tokenExpiration = null; // Variable to store the token expiration time
+
 async function getAccessToken() {
+  // If access token is already available and valid, return it
+  if (accessToken && !isAccessTokenExpired()) {
+    return accessToken;
+  }
+
   const clientId = process.env.SPOTIFY_ID;
   const clientSecret = process.env.SPOTIFY_SECRET;
 
@@ -22,12 +30,25 @@ async function getAccessToken() {
       }
     );
 
-    const { access_token } = response.data;
-    return access_token;
+    const { access_token, expires_in } = response.data;
+    accessToken = access_token;
+
+    // Set the token expiration time
+    const expirationTime = new Date().getTime() + expires_in * 1000;
+    tokenExpiration = expirationTime;
+
+    return accessToken;
   } catch (error) {
     console.error("Error obtaining access token:", error);
     return null;
   }
 }
 
-module.exports = getAccessToken;
+function isAccessTokenExpired() {
+  return tokenExpiration && new Date().getTime() > tokenExpiration;
+}
+
+module.exports = {
+  getAccessToken,
+  isAccessTokenExpired,
+};
