@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
       currentQuestionIndex: 0,
       currentAnswers: 0,
       messages: [],
-      questions: generateRoomQuestions(),
+      questions: [],
     };
     rooms.set(roomId, room);
 
@@ -125,11 +125,12 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("message_sent", newMessage);
   });
 
-  socket.on("start_game", (roomId) => {
+  socket.on("start_game", async ({ roomId, playlistId }) => {
     const room = rooms.get(roomId);
     if (room) {
       room.gameStarted = true;
       room.currentQuestionIndex = 0;
+      room.questions = await generateRoomQuestions(playlistId);
     }
     io.in(roomId).emit("game_started", roomId);
   });
@@ -145,7 +146,9 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("new_question", currentQuestion);
     io.in(roomId).emit("leaderboard_updated", players);
   });
-
+  socket.on("pick_music", (roomId) => {
+    io.in(roomId).emit("start_choosing_music", roomId);
+  });
   socket.on("leave_room", (roomId) => {
     const room = rooms.get(roomId);
     const playerIndex = room.players.findIndex(

@@ -1,8 +1,9 @@
 const fs = require("fs");
-const getPlaylistTracks = require("./fetchPlaylist");
+const { getPlaylistTracks } = require("./fetchPlaylist");
 
-function generateQuizQuestions(playlistData) {
+async function generateQuizQuestions(playlistId) {
   const quizQuestions = [];
+  const playlistData = await getPlaylistTracks(playlistId);
   const tracks = playlistData.tracks.items;
 
   tracks.forEach((track, index) => {
@@ -44,6 +45,17 @@ function generateOptions(tracks, currentIndex, correctOptions) {
   return options;
 }
 
+function getQuestion(questionIndex, quizQuestions) {
+  // Assume you have an array of questions
+
+  // Check if the question index is within the valid range
+  if (questionIndex >= 0 && questionIndex < quizQuestions.length) {
+    return quizQuestions[questionIndex];
+  }
+
+  return null; // Return null if the question index is invalid
+}
+
 async function generateQuizFile(playlistId) {
   try {
     const playlistData = await getPlaylistTracks(playlistId);
@@ -63,30 +75,16 @@ async function generateQuizFile(playlistId) {
   }
 }
 
-function getQuestion(questionIndex, quizQuestions) {
-  // Assume you have an array of questions
+async function generateRoomQuestions(playlistId) {
+  console.log(
+    "🚀 ~ file: getQuestion.js:79 ~ generateRoomQuestions ~ playlistId:",
+    playlistId
+  );
+  const MAX_QUESTION_PER_ROOM = 5;
 
-  // Check if the question index is within the valid range
-  if (questionIndex >= 0 && questionIndex < quizQuestions.length) {
-    return quizQuestions[questionIndex];
-  }
+  // Generate quiz questions based on the playlistId
+  const quizQuestions = await generateQuizQuestions(playlistId);
 
-  return null; // Return null if the question index is invalid
-}
-
-function generateRoomQuestions() {
-  const MAX_QUESTION_PER_ROOM = 15;
-  const quizData = fs.readFileSync("./quiz.json", "utf8");
-  const quizQuestions = JSON.parse(quizData);
-
-  // // Shuffle the quizQuestions array randomly
-  // const shuffledQuestions = quizQuestions.sort(() => Math.random() - 0.5);
-
-  // // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
-  // const roomQuestionsCollection = shuffledQuestions.slice(
-  //   0,
-  //   MAX_QUESTION_PER_ROOM
-  // );
   // Perform the Fisher-Yates shuffle
   for (let i = quizQuestions.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -101,6 +99,6 @@ function generateRoomQuestions() {
 
 module.exports = {
   getQuestion,
-  generateQuizFile,
   generateRoomQuestions,
+  generateQuizFile,
 };
