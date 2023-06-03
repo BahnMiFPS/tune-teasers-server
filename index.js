@@ -18,7 +18,7 @@ const clientAppOrigin =
   process.env.NODE_ENV === "production"
     ? "https://tune-teaser.netlify.app"
     : "http://localhost:3000";
-console.log(clientAppOrigin);
+console.log("🚀 ~ file: index.js:18 ~ clientAppOrigin:", clientAppOrigin);
 const io = new Server(server, {
   cors: {
     origin: clientAppOrigin,
@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/playlists", async (req, res) => {
+  console.log("fetching playlists");
   const { country, locale } = req.query;
 
   try {
@@ -229,5 +230,6 @@ io.on("connection", (socket) => {
   });
 });
 server.listen(port, () => {
+  console.log("🚀 ~ file: index.js:232 ~ server.listen ~ port:", port);
   console.log(`SERVER IS RUNNING on port: ${port}`);
 });

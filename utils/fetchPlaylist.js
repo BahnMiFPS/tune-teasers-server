@@ -26,11 +26,11 @@ async function getPlayListByCountry(country, locale) {
   const url = `https://api.spotify.com/v1/browse/featured-playlists/?country=${country}&locale=${locale}&limit=50`;
   const token = await getAccessToken();
 
-  // You will need to replace 'Bearer ' with your own token.
   const headers = { Authorization: `Bearer ${token}` };
 
   try {
     const response = await axios.get(url, { headers });
+
     return response.data;
   } catch (error) {
     console.log("Playlist Fetching Error:", error);
