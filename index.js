@@ -219,14 +219,20 @@ io.on("connection", (socket) => {
       socket.emit("wrong_answer");
     }
 
-    if (room.currentAnswers === room.players.length) {
+    if (room.currentAnswers === 1) {
+      console.log(
+        "🚀 ~ file: index.js:223 ~ socket.on ~ room.currentAnswers:",
+        room.currentAnswers
+      );
+      const QUESTIONS_TO_ENDGAME = 4; // 5qs.
       room.currentQuestionIndex += 1;
-      if (currentQuestionIndex === 14) {
+      console.log(room.currentQuestionIndex);
+      if (currentQuestionIndex === QUESTIONS_TO_ENDGAME) {
         setTimeout(() => {
           io.in(roomId).emit("game_ended", roomId);
         }, 2000);
       } else {
-        var time = 3;
+        var time = 5;
         var roundCountdown = setInterval(() => {
           if (time == 0) {
             io.sockets.in(roomId).emit("countdown", 0);
