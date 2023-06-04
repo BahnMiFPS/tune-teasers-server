@@ -84,6 +84,8 @@ io.on("connection", (socket) => {
     const room = {
       players: [player],
       gameStarted: false,
+      songNumbers: null,
+      gameMode: null,
       currentQuestionIndex: 0,
       currentAnswers: 0,
       messages: [],
@@ -145,7 +147,10 @@ io.on("connection", (socket) => {
     if (room) {
       room.gameStarted = true;
       room.currentQuestionIndex = 0;
-      room.questions = await generateRoomQuestions(playlistId);
+      room.questions = await generateRoomQuestions(
+        playlistId,
+        room.songNumbers
+      );
     }
   });
 
@@ -153,7 +158,7 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("game_started", roomId);
   });
 
-  socket.on("room_game_init", (roomId, playlist_id) => {
+  socket.on("room_game_init", (roomId) => {
     const room = rooms.get(roomId);
     const players = room.players;
     const roomQuestions = room.questions;
@@ -164,7 +169,11 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("new_question", currentQuestion);
     io.in(roomId).emit("leaderboard_updated", players);
   });
-  socket.on("pick_music", (roomId) => {
+  socket.on("pick_music", ({ roomId, gameMode, songNumbers }) => {
+    console.log(roomId, gameMode, songNumbers);
+    const room = rooms.get(roomId);
+    room.songNumbers = songNumbers;
+    room.gameMode = gameMode;
     io.in(roomId).emit("start_choosing_music", roomId);
   });
   socket.on("leave_room", (roomId) => {
@@ -199,9 +208,7 @@ io.on("connection", (socket) => {
   socket.on("chosen_answer", async ({ answerIndex, roomId }) => {
     const room = rooms.get(roomId);
 
-    const currentQuestionIndex = room.currentQuestionIndex;
-    const roomQuestions = room.questions;
-    const question = getQuestion(room.currentQuestionIndex, roomQuestions);
+    const question = getQuestion(room.currentQuestionIndex, room.questions);
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(
       (player) => player.id === socket.id
@@ -220,26 +227,31 @@ io.on("connection", (socket) => {
     }
 
     if (room.currentAnswers === 1) {
-      console.log(
-        "🚀 ~ file: index.js:223 ~ socket.on ~ room.currentAnswers:",
-        room.currentAnswers
-      );
-      const QUESTIONS_TO_ENDGAME = 4; // 5qs.
-      room.currentQuestionIndex += 1;
-      console.log(room.currentQuestionIndex);
-      if (currentQuestionIndex === QUESTIONS_TO_ENDGAME) {
+      if (room.currentQuestionIndex === room.songNumbers) {
         setTimeout(() => {
           io.in(roomId).emit("game_ended", roomId);
         }, 2000);
       } else {
-        var time = 5;
+        var time;
+        switch (room.gameMode) {
+          case "Slow":
+            time = 10;
+            break;
+          case "Fast":
+            time = 3;
+            break;
+          default:
+            time = 5;
+            break;
+        }
         var roundCountdown = setInterval(() => {
           if (time == 0) {
             io.sockets.in(roomId).emit("countdown", 0);
-            const roomQuestions = room.questions;
+            room.currentQuestionIndex += 1;
+
             const currentQuestion = getQuestion(
               room.currentQuestionIndex,
-              roomQuestions
+              room.questions
             );
             io.in(roomId).emit("new_question", currentQuestion);
             room.currentAnswers = 0;

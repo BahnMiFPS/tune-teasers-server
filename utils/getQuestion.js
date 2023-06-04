@@ -57,32 +57,7 @@ function getQuestion(questionIndex, quizQuestions) {
   return null; // Return null if the question index is invalid
 }
 
-async function generateQuizFile(playlistId) {
-  try {
-    const playlistData = await getPlaylistTracks(playlistId);
-    if (!playlistData) {
-      console.log("Error: Failed to fetch playlist data");
-      return;
-    }
-
-    const quizQuestions = generateQuizQuestions(playlistData);
-
-    const quizData = JSON.stringify(quizQuestions, null, 2);
-
-    fs.writeFileSync("quiz.json", quizData);
-    console.log("Quiz file generated successfully!");
-  } catch (error) {
-    console.log("Error generating quiz file:", error);
-  }
-}
-
-async function generateRoomQuestions(playlistId) {
-  console.log(
-    "🚀 ~ file: getQuestion.js:79 ~ generateRoomQuestions ~ playlistId:",
-    playlistId
-  );
-  const MAX_QUESTION_PER_ROOM = 5;
-
+async function generateRoomQuestions(playlistId, songNumbers) {
   // Generate quiz questions based on the playlistId
   const quizQuestions = await generateQuizQuestions(playlistId);
 
@@ -93,7 +68,7 @@ async function generateRoomQuestions(playlistId) {
   }
 
   // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
-  const roomQuestionsCollection = quizQuestions.slice(0, MAX_QUESTION_PER_ROOM);
+  const roomQuestionsCollection = quizQuestions.slice(0, songNumbers);
 
   return roomQuestionsCollection;
 }
@@ -101,5 +76,4 @@ async function generateRoomQuestions(playlistId) {
 module.exports = {
   getQuestion,
   generateRoomQuestions,
-  generateQuizFile,
 };
