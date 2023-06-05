@@ -227,7 +227,7 @@ io.on("connection", (socket) => {
     }
 
     if (room.currentAnswers === 1) {
-      if (room.currentQuestionIndex === room.songNumbers) {
+      if (room.currentQuestionIndex === room.songNumbers - 1) {
         setTimeout(() => {
           io.in(roomId).emit("game_ended", roomId);
         }, 2000);
