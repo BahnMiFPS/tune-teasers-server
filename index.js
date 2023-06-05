@@ -79,8 +79,15 @@ io.on("connection", (socket) => {
     console.log(roomId);
     socket.join(parseInt(roomId));
     const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
-    const player = { id: socket.id, name, score: 0, image: randomImage };
+    const player = {
+      id: socket.id,
+      name,
+      score: 0,
+      image: randomImage,
+      owner: true,
+    };
     // Create a room object with players array, gameStarted flag, and currentQuestionIndex
+
     const room = {
       players: [player],
       gameStarted: false,
@@ -101,7 +108,13 @@ io.on("connection", (socket) => {
     // Create a new player object with a unique ID and score
     const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
 
-    const player = { id: socket.id, name, score: 0, image: randomImage };
+    const player = {
+      id: socket.id,
+      name,
+      score: 0,
+      image: randomImage,
+      owner: false,
+    };
 
     // Get the room object from the rooms map
     const room = rooms.get(parseInt(roomId));
@@ -172,9 +185,14 @@ io.on("connection", (socket) => {
   socket.on("pick_music", ({ roomId, gameMode, songNumbers }) => {
     console.log(roomId, gameMode, songNumbers);
     const room = rooms.get(roomId);
+    const socketId = socket.id;
+
     room.songNumbers = songNumbers;
     room.gameMode = gameMode;
-    io.in(roomId).emit("start_choosing_music", roomId);
+    io.in(roomId).emit("start_choosing_music", {
+      roomId,
+      playerList: room.players,
+    });
   });
   socket.on("leave_room", (roomId) => {
     const room = rooms.get(roomId);
@@ -265,6 +283,5 @@ io.on("connection", (socket) => {
   });
 });
 server.listen(port, () => {
-  console.log("🚀 ~ file: index.js:232 ~ server.listen ~ port:", port);
   console.log(`SERVER IS RUNNING on port: ${port}`);
 });
