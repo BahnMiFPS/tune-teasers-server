@@ -13,7 +13,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3001;
 const clientAppOrigin =
   process.env.NODE_ENV === "production"
-    ? "https://tune-teaser.netlify.app"
+    ? "https://tune-teasers.vercel.app"
     : "http://localhost:3000";
 const io = new Server(server, {
   cors: {
