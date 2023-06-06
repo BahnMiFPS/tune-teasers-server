@@ -145,7 +145,7 @@ io.on("connection", (socket) => {
     }
 
     if (room.gameStarted) {
-      socket.emit("no_room_found", { player, roomId });
+      socket.emit("no_room_found");
     }
     const senderIndex = room.players.findIndex(
       (player) => player.id === socket.id
