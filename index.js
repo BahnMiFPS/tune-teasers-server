@@ -203,6 +203,13 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("new_question", currentQuestion);
     io.in(roomId).emit("leaderboard_updated", players);
   });
+
+  socket.on("update_game_mode", ({ newGameMode, roomId }) => {
+    io.in(parseInt(roomId)).emit("new_game_mode", { newGameMode });
+  });
+  socket.on("update_song_numbers", ({ newSongNumbers, roomId }) => {
+    io.in(parseInt(roomId)).emit("new_song_numbers", { newSongNumbers });
+  });
   socket.on("pick_music", ({ roomId, gameMode, songNumbers }) => {
     console.log(roomId, gameMode, songNumbers);
     const room = rooms.get(roomId);
