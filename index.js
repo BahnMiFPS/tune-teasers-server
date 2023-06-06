@@ -75,6 +75,7 @@ io.on("connection", (socket) => {
 
   console.log(`User Connected: ${socket.id}`);
   socket.on("create_room", (data) => {
+    console.log("🚀 ~ file: index.js:78 ~ socket.on ~ data:", data);
     const { name, roomId } = data;
     console.log(roomId);
     socket.join(parseInt(roomId));
@@ -105,35 +106,39 @@ io.on("connection", (socket) => {
 
   socket.on("join_room", (data) => {
     const { name, roomId } = data;
-    // Create a new player object with a unique ID and score
-    const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
-
-    const player = {
-      id: socket.id,
-      name,
-      score: 0,
-      image: randomImage,
-      owner: false,
-    };
-
-    // Get the room object from the rooms map
     const room = rooms.get(roomId);
-    // if (!room) {
-    //   console.log("!room", room);
-    //   socket.emit("no_room_found", { player, roomId });
-    // }
-    if (room) {
-      if (room.gameStarted) {
-        socket.emit("no_room_found", { player, roomId });
-      } else {
-        socket.join(roomId);
-        const playerExists = room.players.some((p) => p.id === player.id);
-        // Check if the player already exists in the room
-        if (!playerExists) {
-          room.players.push(player);
-          io.in(roomId).emit("new_player_joined", { players: room.players });
-        }
+    if (!room || room.gameStarted) {
+      socket.emit("join_room_error", { message: "Room not found" });
+      return;
+    } else {
+      // Create a new player object with a unique ID and score
+      const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
+
+      const player = {
+        id: socket.id,
+        name,
+        score: 0,
+        image: randomImage,
+        owner: false,
+      };
+
+      // Get the room object from the rooms map
+      // if (!room) {
+      //   console.log("!room", room);
+      //   socket.emit("no_room_found", { player, roomId });
+      // }
+      socket.emit("join_room_success", { name: player.name, roomId });
+
+      socket.join(roomId);
+      const playerExists = room.players.some((p) => p.id === player.id);
+      // Check if the player already exists in the room
+      if (!playerExists) {
+        room.players.push(player);
       }
+      io.in(roomId).emit("new_player_joined", {
+        players: room.players,
+        isLoading: false,
+      });
     }
   });
   socket.on("send_message", (data) => {
@@ -215,7 +220,6 @@ io.on("connection", (socket) => {
     });
   });
   socket.on("leave_room", (roomId) => {
-    console.log("🚀 ~ file: index.js:201 ~ socket.on ~ roomId:", roomId);
     const room = rooms.get(roomId);
     if (!room) {
       socket.emit("no_room_found");
