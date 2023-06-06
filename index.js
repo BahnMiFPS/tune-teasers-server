@@ -117,7 +117,7 @@ io.on("connection", (socket) => {
     };
 
     // Get the room object from the rooms map
-    const room = rooms.get(parseInt(roomId));
+    const room = rooms.get(roomId);
     // if (!room) {
     //   console.log("!room", room);
     //   socket.emit("no_room_found", { player, roomId });
@@ -139,6 +139,14 @@ io.on("connection", (socket) => {
   socket.on("send_message", (data) => {
     const { roomId, message } = data;
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
+
+    if (room.gameStarted) {
+      socket.emit("no_room_found", { player, roomId });
+    }
     const senderIndex = room.players.findIndex(
       (player) => player.id === socket.id
     );
@@ -157,6 +165,10 @@ io.on("connection", (socket) => {
   socket.on("picked_music_starting_game", async ({ roomId, playlistId }) => {
     io.in(roomId).emit("countdown_start", roomId);
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
     if (room) {
       room.gameStarted = true;
       room.currentQuestionIndex = 0;
@@ -173,6 +185,10 @@ io.on("connection", (socket) => {
 
   socket.on("room_game_init", (roomId) => {
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
     const players = room.players;
     const roomQuestions = room.questions;
     const currentQuestion = getQuestion(
@@ -185,6 +201,10 @@ io.on("connection", (socket) => {
   socket.on("pick_music", ({ roomId, gameMode, songNumbers }) => {
     console.log(roomId, gameMode, songNumbers);
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
     const socketId = socket.id;
 
     room.songNumbers = songNumbers;
@@ -195,7 +215,12 @@ io.on("connection", (socket) => {
     });
   });
   socket.on("leave_room", (roomId) => {
+    console.log("🚀 ~ file: index.js:201 ~ socket.on ~ roomId:", roomId);
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
     const playerIndex = room.players.findIndex(
       (player) => player.id === socket.id
     );
@@ -209,6 +234,10 @@ io.on("connection", (socket) => {
     const roomId = findRoomIdBySocketId(socket.id);
     if (roomId) {
       const room = rooms.get(roomId);
+      if (!room) {
+        socket.emit("no_room_found");
+        return;
+      }
       const playerIndex = room.players.findIndex(
         (player) => player.id === socket.id
       );
@@ -225,6 +254,10 @@ io.on("connection", (socket) => {
 
   socket.on("chosen_answer", async ({ answerIndex, roomId }) => {
     const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
 
     const question = getQuestion(room.currentQuestionIndex, room.questions);
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
