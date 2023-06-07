@@ -94,8 +94,9 @@ io.on("connection", (socket) => {
       gameStarted: false,
       songNumbers: null,
       gameMode: null,
-      currentQuestionIndex: 0,
+      currentQuestionIndex: -1,
       currentAnswers: 0,
+      currentCorrectAnswers: 0,
       messages: [],
       questions: [],
     };
@@ -168,7 +169,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("picked_music_starting_game", async ({ roomId, playlistId }) => {
-    io.in(roomId).emit("countdown_start", roomId);
     const room = rooms.get(roomId);
     if (!room) {
       socket.emit("no_room_found");
@@ -176,12 +176,13 @@ io.on("connection", (socket) => {
     }
     if (room) {
       room.gameStarted = true;
-      room.currentQuestionIndex = 0;
       room.questions = await generateRoomQuestions(
         playlistId,
         room.songNumbers
       );
+      console.log(room.questions);
     }
+    io.in(roomId).emit("countdown_start", roomId);
   });
 
   socket.on("start_game", ({ roomId }) => {
@@ -195,13 +196,8 @@ io.on("connection", (socket) => {
       return;
     }
     const players = room.players;
-    const roomQuestions = room.questions;
-    const currentQuestion = getQuestion(
-      room.currentQuestionIndex,
-      roomQuestions
-    );
-    io.in(roomId).emit("new_question", currentQuestion);
     io.in(roomId).emit("leaderboard_updated", players);
+    io.in(roomId).emit("question_init", room.gameMode);
   });
 
   socket.on("update_game_mode", ({ newGameMode, roomId }) => {
@@ -217,7 +213,6 @@ io.on("connection", (socket) => {
       socket.emit("no_room_found");
       return;
     }
-    const socketId = socket.id;
 
     room.songNumbers = songNumbers;
     room.gameMode = gameMode;
@@ -276,8 +271,11 @@ io.on("connection", (socket) => {
       (player) => player.id === socket.id
     );
     room.currentAnswers += 1;
+
+    // returning answer to players
     if (isCorrect) {
-      if (room.currentAnswers === 1) {
+      room.currentCorrectAnswers += 1;
+      if (room.currentCorrectAnswers === 1) {
         room.players[playerIndex].score += 2;
       } else {
         room.players[playerIndex].score += 1;
@@ -288,42 +286,88 @@ io.on("connection", (socket) => {
       socket.emit("wrong_answer");
     }
 
-    if (room.currentAnswers === 1) {
-      if (room.currentQuestionIndex === room.songNumbers - 1) {
-        setTimeout(() => {
-          io.in(roomId).emit("game_ended", roomId);
-        }, 2000);
-      } else {
-        var time;
-        switch (room.gameMode) {
-          case "Slow":
-            time = 10;
-            break;
-          case "Fast":
-            time = 3;
-            break;
-          default:
-            time = 5;
-            break;
-        }
-        var roundCountdown = setInterval(() => {
-          if (time == 0) {
-            io.sockets.in(roomId).emit("countdown", 0);
+    if (room.currentAnswers === room.players.length) {
+      io.in(roomId).emit("all_players_answered");
+    }
+  });
+
+  let roundCountdown;
+
+  socket.on("next_question", (roomId) => {
+    const room = rooms.get(roomId);
+    if (!room) {
+      socket.emit("no_room_found");
+      return;
+    }
+    console.log("currentQuestionIndex", room.currentQuestionIndex);
+    console.log("room song numbers", room.songNumbers);
+
+    var time;
+    switch (room.gameMode) {
+      case "Slow":
+        time = 20;
+        break;
+      case "Fast":
+        time = 3;
+        break;
+      default:
+        time = 5;
+        break;
+    }
+
+    // Clear the previous countdown interval
+    clearInterval(roundCountdown);
+
+    if (room.currentQuestionIndex === room.songNumbers) {
+      clearInterval(roundCountdown);
+      io.in(roomId).emit("countdown_to_next_question", 0);
+      setTimeout(() => {
+        io.in(roomId).emit("game_ended", roomId);
+      }, time);
+      return;
+    }
+
+    // Start the countdown
+    let countdown = time;
+    let delayInterval = null;
+    roundCountdown = setInterval(() => {
+      if (countdown === 0 || room.currentAnswers === room.players.length) {
+        // Stop the countdown
+
+        clearInterval(roundCountdown);
+
+        let delayCountdown = 3;
+        delayInterval = setInterval(() => {
+          if (delayCountdown === 0) {
+            clearInterval(delayInterval);
             room.currentQuestionIndex += 1;
+            console.log(room.currentQuestionIndex);
+
+            // Check if game ended
+            if (room.currentQuestionIndex === room.songNumbers) {
+              io.in(roomId).emit("game_ended", roomId);
+              return;
+            }
 
             const currentQuestion = getQuestion(
               room.currentQuestionIndex,
               room.questions
             );
-            io.in(roomId).emit("new_question", currentQuestion);
+
             room.currentAnswers = 0;
-            clearInterval(roundCountdown);
+            room.currentCorrectAnswers = 0;
+            io.in(roomId).emit("new_question", currentQuestion);
+          } else {
+            io.in(roomId).emit("going_to_next_question", delayCountdown);
           }
-          io.sockets.in(roomId).emit("countdown", time);
-          time -= 1;
+
+          delayCountdown -= 1;
         }, 1000);
       }
-    }
+      io.in(roomId).emit("countdown_to_next_question", countdown);
+      countdown -= 1;
+      console.log(countdown, "counting");
+    }, 1000);
   });
 });
 server.listen(port, () => {
