@@ -327,7 +327,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (room.currentQuestion == 0) {
+    if (room.currentQuestionIndex == -1) {
       time = 0;
     }
 
