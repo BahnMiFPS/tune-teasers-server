@@ -1,0 +1,59 @@
+config:
+  target: "https://tune-teaser-server.onrender.com"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      rampTo: 10
+  defaults:
+    headers:
+      x-my-service-auth: "987401838271002188298567"
+
+scenarios:
+  - name: "Create, Join and Play Game"
+    engine: "socketio"
+    flow:
+      - get:
+          url: "/api/playlists?country=us&locale=en"
+      - emit:
+          channel: "create_room"
+          data:
+            name: "TestRoom"
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "join_room"
+          data:
+            name: "TestPlayer"
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "picked_music_starting_game"
+          data:
+            roomId: "TestRoom123"
+            playlistId: "37i9dQZF1DWXti3N4Wp5xy"
+      - think: 5
+      - emit:
+          channel: "start_game"
+          data:
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "room_game_init"
+          data:
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "chosen_answer"
+          data:
+            answerIndex: 1
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "next_question"
+          data:
+            roomId: "TestRoom123"
+      - think: 5
+      - emit:
+          channel: "leave_room"
+          data:
+            roomId: "TestRoom123"

@@ -58,19 +58,26 @@ function getQuestion(questionIndex, quizQuestions) {
 }
 
 async function generateRoomQuestions(playlistId, songNumbers) {
-  // Generate quiz questions based on the playlistId
-  const quizQuestions = await generateQuizQuestions(playlistId);
+  try {
+    // Generate quiz questions based on the playlistId
+    const quizQuestions = await generateQuizQuestions(playlistId);
+    for (let i = quizQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [quizQuestions[i], quizQuestions[j]] = [
+        quizQuestions[j],
+        quizQuestions[i],
+      ];
+    }
 
-  // Perform the Fisher-Yates shuffle
-  for (let i = quizQuestions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+    // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
+    const roomQuestionsCollection = quizQuestions.slice(0, songNumbers);
+
+    return roomQuestionsCollection;
+  } catch (error) {
+    console.error(`Questions not found for index: ${error} `);
+
+    // Perform the Fisher-Yates shuffle
   }
-
-  // Take the first MAX_QUESTION_PER_ROOM questions from the shuffled array
-  const roomQuestionsCollection = quizQuestions.slice(0, songNumbers);
-
-  return roomQuestionsCollection;
 }
 
 module.exports = {

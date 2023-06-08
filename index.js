@@ -176,13 +176,30 @@ io.on("connection", (socket) => {
     }
     if (room) {
       room.gameStarted = true;
-      room.questions = await generateRoomQuestions(
-        playlistId,
-        room.songNumbers
-      );
-      console.log(room.questions);
+      try {
+        const roomQuestions = await generateRoomQuestions(
+          playlistId,
+          room.songNumbers
+        );
+        room.questions = roomQuestions;
+        console.log(room);
+      } catch (error) {
+        console.error(
+          `Questions not found for index: ${roomId}. Error: ${error}`
+        );
+        socket.emit("questions_error", error.message);
+        return;
+      }
+      try {
+        io.in(roomId).emit("countdown_start", roomId);
+        io.in(roomId).emit("game_started", roomId);
+      } catch (error) {
+        console.error(
+          `Error emitting event for room: ${roomId}. Error: ${error}`
+        );
+        socket.emit("emit_error", error.message);
+      }
     }
-    io.in(roomId).emit("countdown_start", roomId);
   });
 
   socket.on("start_game", ({ roomId }) => {
@@ -266,6 +283,13 @@ io.on("connection", (socket) => {
     }
 
     const question = getQuestion(room.currentQuestionIndex, room.questions);
+    if (!question) {
+      console.error(
+        `Question not found for index: ${room.currentQuestionIndex}`
+      );
+      // handle this situation, e.g. by returning from this function or throwing an error
+      return;
+    }
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(
       (player) => player.id === socket.id
