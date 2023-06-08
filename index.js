@@ -89,8 +89,8 @@ io.on("connection", (socket) => {
       gameStarted: false,
       songNumbers: null,
       gameMode: null,
-      currentQuestionIndex: 0, // running 0 just for stress test
-      // currentQuestionIndex: -1,
+      // currentQuestionIndex: 0, // running 0 just for stress test
+      currentQuestionIndex: -1,
       currentAnswers: 0,
       currentCorrectAnswers: 0,
       messages: [],
@@ -172,26 +172,22 @@ io.on("connection", (socket) => {
     if (room) {
       room.gameStarted = true;
       try {
+        // Emit "generating_questions" event to inform the room that questions are being generated
+        io.in(roomId).emit("generating_questions", roomId);
+
         const roomQuestions = await generateRoomQuestions(
           playlistId,
           room.songNumbers
         );
         room.questions = roomQuestions;
+
+        // Proceed with answering questions or emitting events to users
+        io.in(roomId).emit("countdown_start", roomId);
       } catch (error) {
         console.error(
           `Questions not found for index: ${roomId}. Error: ${error}`
         );
         socket.emit("questions_error", error.message);
-        return;
-      }
-      try {
-        io.in(roomId).emit("countdown_start", roomId);
-        io.in(roomId).emit("game_started", roomId);
-      } catch (error) {
-        console.error(
-          `Error emitting event for room: ${roomId}. Error: ${error}`
-        );
-        socket.emit("emit_error", error.message);
       }
     }
   });
@@ -276,12 +272,13 @@ io.on("connection", (socket) => {
     }
 
     const question = getQuestion(room.currentQuestionIndex, room.questions);
+    console.log(`This question: ${question}`);
+    console.log(`This rooms questions: ${room.questions}`);
     if (!question) {
       console.log(
         `Question not found for index: Room currentQuestionIndex: ${room.currentQuestionIndex} answerindex: ${answerIndex}, roomId: ${roomId}`
       );
-      // handle this situation, e.g. by returning from this function or throwing an error
-      // return;
+      console.log(room.questions);
     }
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(

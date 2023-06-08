@@ -61,6 +61,9 @@ async function generateRoomQuestions(playlistId, songNumbers) {
   try {
     // Generate quiz questions based on the playlistId
     const quizQuestions = await generateQuizQuestions(playlistId);
+    if (quizQuestions.length === 0) {
+      throw new Error("No questions found for the playlist");
+    }
     for (let i = quizQuestions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [quizQuestions[i], quizQuestions[j]] = [
@@ -74,9 +77,8 @@ async function generateRoomQuestions(playlistId, songNumbers) {
 
     return roomQuestionsCollection;
   } catch (error) {
-    console.error(`Questions not found for index: ${error} `);
-
-    // Perform the Fisher-Yates shuffle
+    console.error(`Error generating room questions: ${error}`);
+    throw error;
   }
 }
 
