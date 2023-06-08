@@ -276,11 +276,11 @@ io.on("connection", (socket) => {
 
     const question = getQuestion(room.currentQuestionIndex, room.questions);
     if (!question) {
-      console.error(
-        `Question not found for index: answerindex: ${answerIndex}, roomId: ${roomId}`
+      console.log(
+        `Question not found for index: Room currentQuestionIndex: ${room.currentQuestionIndex} answerindex: ${answerIndex}, roomId: ${roomId}`
       );
       // handle this situation, e.g. by returning from this function or throwing an error
-      return;
+      // return;
     }
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(
