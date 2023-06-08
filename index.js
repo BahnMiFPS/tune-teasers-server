@@ -327,6 +327,10 @@ io.on("connection", (socket) => {
       return;
     }
 
+    if (room.currentQuestion == 0) {
+      time = 0;
+    }
+
     // Start the countdown
     let countdown = time;
     let delayInterval = null;
