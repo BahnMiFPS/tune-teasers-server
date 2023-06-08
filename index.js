@@ -29,7 +29,6 @@ let accessToken = null;
 (async () => {
   try {
     accessToken = await getAccessToken();
-    console.log("Access token obtained successfully!");
   } catch (error) {
     console.error("Failed to obtain access token:", error);
     process.exit(1);
@@ -41,7 +40,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/playlists", async (req, res) => {
-  console.log("fetching playlists");
   const { country, locale } = req.query;
   try {
     const playlists = await getPlayListByCountry(country, locale, accessToken);
@@ -73,11 +71,8 @@ io.on("connection", (socket) => {
     return null; // Socket ID not found in any room
   }
 
-  console.log(`User Connected: ${socket.id}`);
   socket.on("create_room", (data) => {
-    console.log("🚀 ~ file: index.js:78 ~ socket.on ~ data:", data);
     const { name, roomId } = data;
-    console.log(roomId);
     socket.join(parseInt(roomId));
     const randomImage = faker.image.urlLoremFlickr({ category: "cat" });
     const player = {
@@ -124,10 +119,9 @@ io.on("connection", (socket) => {
       };
 
       // Get the room object from the rooms map
-      // if (!room) {
-      //   console.log("!room", room);
-      //   socket.emit("no_room_found", { player, roomId });
-      // }
+      if (!room) {
+        socket.emit("no_room_found", { player, roomId });
+      }
       socket.emit("join_room_success", { name: player.name, roomId });
 
       socket.join(roomId);
@@ -182,7 +176,6 @@ io.on("connection", (socket) => {
           room.songNumbers
         );
         room.questions = roomQuestions;
-        console.log(room);
       } catch (error) {
         console.error(
           `Questions not found for index: ${roomId}. Error: ${error}`
@@ -224,7 +217,6 @@ io.on("connection", (socket) => {
     io.in(parseInt(roomId)).emit("new_song_numbers", { newSongNumbers });
   });
   socket.on("pick_music", ({ roomId, gameMode, songNumbers }) => {
-    console.log(roomId, gameMode, songNumbers);
     const room = rooms.get(roomId);
     if (!room) {
       socket.emit("no_room_found");
@@ -285,7 +277,7 @@ io.on("connection", (socket) => {
     const question = getQuestion(room.currentQuestionIndex, room.questions);
     if (!question) {
       console.error(
-        `Question not found for index: ${room.currentQuestionIndex}`
+        `Question not found for index: answerindex: ${answerIndex}, roomId: ${roomId}`
       );
       // handle this situation, e.g. by returning from this function or throwing an error
       return;
@@ -323,8 +315,6 @@ io.on("connection", (socket) => {
       socket.emit("no_room_found");
       return;
     }
-    console.log("currentQuestionIndex", room.currentQuestionIndex);
-    console.log("room song numbers", room.songNumbers);
 
     var time;
     switch (room.gameMode) {
@@ -369,7 +359,6 @@ io.on("connection", (socket) => {
           if (delayCountdown === 0) {
             clearInterval(delayInterval);
             room.currentQuestionIndex += 1;
-            console.log(room.currentQuestionIndex);
 
             // Check if game ended
             if (room.currentQuestionIndex === room.songNumbers) {
@@ -394,7 +383,6 @@ io.on("connection", (socket) => {
       }
       io.in(roomId).emit("countdown_to_next_question", countdown);
       countdown -= 1;
-      console.log(countdown, "counting");
     }, 1000);
   });
 });

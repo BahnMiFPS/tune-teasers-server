@@ -21,17 +21,9 @@ async function getAccessToken() {
         json: true,
       }
     );
-    console.log(
-      "🚀 ~ file: spotify.js:33 ~ getAccessToken ~ response:",
-      response.data
-    );
 
     const { access_token, expires_in } = response.data;
     const accessToken = access_token;
-    console.log(
-      "🚀 ~ file: spotify.js:32 ~ getAccessToken ~ accessToken:",
-      accessToken
-    );
 
     // // Set the token expiration time
     // const expirationTime = new Date().getTime() + expires_in * 1000;

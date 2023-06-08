@@ -17,7 +17,6 @@ async function getPlaylistTracks(playlist_id) {
       return response.data;
     }
   } catch (error) {
-    console.log("Error getting track preview:", error);
     return null;
   }
 }
@@ -32,7 +31,7 @@ async function getPlayListByCountry(country, locale, token) {
 
     return response.data;
   } catch (error) {
-    console.log("Playlist Fetching Error:", error);
+    console.error("Playlist Fetching Error:", error);
     return null;
   }
 }

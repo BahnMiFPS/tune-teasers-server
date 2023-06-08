@@ -18,42 +18,50 @@ scenarios:
           channel: "create_room"
           data:
             name: "TestRoom"
-            roomId: "TestRoom123"
+            roomId: "12"
       - think: 5
       - emit:
           channel: "join_room"
           data:
             name: "TestPlayer"
-            roomId: "TestRoom123"
+            roomId: "12"
+      - think: 5
+      - emit:
+          channel: "pick_music"
+          data:
+            name: "TestPlayer"
+            roomId: "12"
+            gameMode: "Normal"
+            songNumbers: "5"
       - think: 5
       - emit:
           channel: "picked_music_starting_game"
           data:
-            roomId: "TestRoom123"
+            roomId: "12"
             playlistId: "37i9dQZF1DWXti3N4Wp5xy"
       - think: 5
       - emit:
           channel: "start_game"
           data:
-            roomId: "TestRoom123"
+            roomId: "12"
       - think: 5
       - emit:
           channel: "room_game_init"
           data:
-            roomId: "TestRoom123"
+            roomId: "12"
       - think: 5
       - emit:
           channel: "chosen_answer"
           data:
             answerIndex: 1
-            roomId: "TestRoom123"
+            roomId: "12"
       - think: 5
       - emit:
           channel: "next_question"
           data:
-            roomId: "TestRoom123"
+            roomId: "12"
       - think: 5
       - emit:
           channel: "leave_room"
           data:
-            roomId: "TestRoom123"
+            roomId: "12"
