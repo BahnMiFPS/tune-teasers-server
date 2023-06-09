@@ -12,6 +12,8 @@
   "keywords": [],
   "description": "",
   "dependencies": {
+    "artillery": "^2.0.0-33",
+    "artillery-engine-socketio-v3": "^1.1.3",
     "axios": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.1.3",

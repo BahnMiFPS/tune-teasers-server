@@ -89,7 +89,7 @@ io.on("connection", (socket) => {
       gameStarted: false,
       songNumbers: null,
       gameMode: null,
-      // currentQuestionIndex: 0, // running 0 just for stress test
+      // currentQuestionIndex: 2, // running 0 just for stress test
       currentQuestionIndex: -1,
       currentAnswers: 0,
       currentCorrectAnswers: 0,
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
       questions: [],
     };
     rooms.set(roomId, room);
-
+    console.log("create_room", roomId);
     io.in(roomId).emit("new_player_joined", { players: room.players });
   });
 
@@ -164,6 +164,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("picked_music_starting_game", async ({ roomId, playlistId }) => {
+    console.log("picked_music_starting_game");
     const room = rooms.get(roomId);
     if (!room) {
       socket.emit("no_room_found");
@@ -219,7 +220,7 @@ io.on("connection", (socket) => {
       socket.emit("no_room_found");
       return;
     }
-
+    console.log("pick music");
     room.songNumbers = songNumbers;
     room.gameMode = gameMode;
     io.in(roomId).emit("start_choosing_music", {
@@ -272,13 +273,12 @@ io.on("connection", (socket) => {
     }
 
     const question = getQuestion(room.currentQuestionIndex, room.questions);
-    console.log(`This question: ${question}`);
-    console.log(`This rooms questions: ${room.questions}`);
+
     if (!question) {
       console.log(
         `Question not found for index: Room currentQuestionIndex: ${room.currentQuestionIndex} answerindex: ${answerIndex}, roomId: ${roomId}`
       );
-      console.log(room.questions);
+      return;
     }
     const isCorrect = question.options[answerIndex] === question.correctAnswer;
     const playerIndex = room.players.findIndex(
@@ -295,9 +295,11 @@ io.on("connection", (socket) => {
         room.players[playerIndex].score += 1;
       }
       socket.emit("correct_answer", answerIndex);
+      console.log("correct_answer", question.correctAnswer);
       io.in(roomId).emit("leaderboard_updated", room.players);
     } else {
       socket.emit("wrong_answer");
+      console.log(`wrong_answer`);
     }
 
     if (room.currentAnswers === room.players.length) {
@@ -329,7 +331,6 @@ io.on("connection", (socket) => {
 
     // Clear the previous countdown interval
     clearInterval(roundCountdown);
-
     if (room.currentQuestionIndex === room.songNumbers) {
       clearInterval(roundCountdown);
       io.in(roomId).emit("countdown_to_next_question", 0);

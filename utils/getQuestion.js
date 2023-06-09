@@ -48,12 +48,17 @@ function generateOptions(tracks, currentIndex, correctOptions) {
 
 function getQuestion(questionIndex, quizQuestions) {
   // Assume you have an array of questions
-
+  // Testing only
+  if (questionIndex < 0) {
+    questionIndex === 0;
+  }
   // Check if the question index is within the valid range
   if (questionIndex >= 0 && questionIndex < quizQuestions.length) {
-    return quizQuestions[questionIndex];
+    const question = quizQuestions[questionIndex];
+    return question;
   }
 
+  console.log("Question not found for index:", questionIndex);
   return null; // Return null if the question index is invalid
 }
 
@@ -61,9 +66,11 @@ async function generateRoomQuestions(playlistId, songNumbers) {
   try {
     // Generate quiz questions based on the playlistId
     const quizQuestions = await generateQuizQuestions(playlistId);
+
     if (quizQuestions.length === 0) {
       throw new Error("No questions found for the playlist");
     }
+
     for (let i = quizQuestions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [quizQuestions[i], quizQuestions[j]] = [

@@ -2,68 +2,62 @@ config:
   target: "http://localhost:3001"
   phases:
     - duration: 60
-      arrivalRate: 2
+      arrivalRate: 10
       rampTo: 10
-  defaults:
-    headers:
-      x-my-service-auth: "987401838271002188298567"
+  engines:
+    socketio: {}
+  processor: "./test.js" # Path to the JavaScript file containing your custom functions
 
 scenarios:
   - name: "Create, Join and Play Game"
     engine: "socketio"
     flow:
+      - function: "generateRoomAndUser" # Call the custom function to generate unique data
       - think: 5
-      - get:
-          url: "/api/playlists?country=us&locale=en"
-      - think: 2
       - emit:
           channel: "create_room"
-          data:
-            name: "TestRoom"
-            roomId: 12
+          data: "{{ createRoomData }}"
       - think: 2
-      - emit:
-          channel: "join_room"
-          data:
-            name: "TestPlayer"
-            roomId: 12
-      - think: 2
+      # - function: "joinRoom" # Call the custom function to generate join room data
+      # - emit:
+      #     channel: "join_room"
+      #     data: "{{ joinRoomData }}"
+      # - think: 10
       - emit:
           channel: "pick_music"
           data:
-            name: "TestPlayer"
-            roomId: 12
-            gameMode: "Normal"
+            roomId: "{{createRoomData.roomId}}"
+            gameMode: "Slow"
             songNumbers: 5
       - think: 2
       - emit:
           channel: "picked_music_starting_game"
           data:
-            roomId: 12
+            roomId: "{{createRoomData.roomId}}"
             playlistId: "37i9dQZF1DWXti3N4Wp5xy"
       - think: 2
       - emit:
           channel: "start_game"
           data:
-            roomId: 12
+            roomId: "{{createRoomData.roomId}}"
       - think: 2
       - emit:
           channel: "room_game_init"
           data:
-            roomId: 12
-      - think: 2
-      - emit:
-          channel: "chosen_answer"
-          data:
-            answerIndex: 1
-            roomId: 12
+            roomId: "{{createRoomData.roomId}}"
       - think: 2
       - emit:
           channel: "next_question"
           data:
-            roomId: 12
+            roomId: "{{createRoomData.roomId}}"
+      - think: 10
+      - emit:
+          channel: "chosen_answer"
+          data:
+            answerIndex: 1
+            roomId: "{{createRoomData.roomId}}"
       - think: 2
       - emit:
           channel: "leave_room"
           data:
-            roomId: 12
+            roomId: "{{createRoomData.roomId}}"
