@@ -1,4 +1,5 @@
 config:
+  # target: "http://localhost:3001"
   target: "https://tune-teaser-server.onrender.com"
   phases:
     - duration: 60
@@ -56,7 +57,7 @@ scenarios:
           data:
             answerIndex: 1
             roomId: "{{createRoomData.roomId}}"
-      - think: 2
+      - think: 5
       - emit:
           channel: "leave_room"
           data:

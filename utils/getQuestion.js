@@ -49,9 +49,9 @@ function generateOptions(tracks, currentIndex, correctOptions) {
 function getQuestion(questionIndex, quizQuestions) {
   // Assume you have an array of questions
   // Testing only
-  if (questionIndex < 0) {
-    questionIndex === 0;
-  }
+  // if (questionIndex < 0) {
+  //   questionIndex === 0;
+  // }
   // Check if the question index is within the valid range
   if (questionIndex >= 0 && questionIndex < quizQuestions.length) {
     const question = quizQuestions[questionIndex];
