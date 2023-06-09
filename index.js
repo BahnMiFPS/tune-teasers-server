@@ -276,7 +276,7 @@ io.on("connection", (socket) => {
 
     if (!question) {
       console.log(
-        `Question not found for index: Room currentQuestionIndex: ${room.currentQuestionIndex} answerindex: ${answerIndex}, roomId: ${roomId}`
+        `Question not found for index: Room currentQuestionIndex: ${room.currentQuestionIndex}, room questions: ${room.questions}`
       );
       return;
     }
