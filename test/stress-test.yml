@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3001"
+  target: "https://tune-teaser-server.onrender.com"
   phases:
     - duration: 60
       arrivalRate: 10
