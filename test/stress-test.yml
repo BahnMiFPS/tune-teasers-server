@@ -52,12 +52,12 @@ scenarios:
           data:
             roomId: "{{createRoomData.roomId}}"
       - think: 10
-      - emit:
-          channel: "chosen_answer"
-          data:
-            answerIndex: 1
-            roomId: "{{createRoomData.roomId}}"
-      - think: 5
+      # - emit:
+      #     channel: "chosen_answer"
+      #     data:
+      #       answerIndex: 1
+      #       roomId: "{{createRoomData.roomId}}"
+      # - think: 5
       - emit:
           channel: "leave_room"
           data:
