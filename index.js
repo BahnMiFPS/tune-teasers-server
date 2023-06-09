@@ -89,8 +89,8 @@ io.on("connection", (socket) => {
       gameStarted: false,
       songNumbers: null,
       gameMode: null,
-      // currentQuestionIndex: 2, // running 0 just for stress test
-      currentQuestionIndex: -1,
+      currentQuestionIndex: 2, // running 2 just for stress test
+      // currentQuestionIndex: -1,
       currentAnswers: 0,
       currentCorrectAnswers: 0,
       messages: [],
